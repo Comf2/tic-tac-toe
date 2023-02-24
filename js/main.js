@@ -13,6 +13,10 @@ const spaceEles = document.querySelectorAll('.game-space');
 let gamePlaying = true;
 
 gameConfig = JSON.parse(localStorage.getItem('gameConfig'));
+
+//front end eles changing
+const turnContainer = document.querySelector('.turn-container');
+
 function initConfig() {
 	if (gameConfig.pOneTeam == 'o') {
 		playerOneSym = `<i class="fa-solid fa-o o-color"></i>`;
@@ -30,17 +34,26 @@ initConfig();
 
 //init the cpu, to run on its turn
 function initCpu() {
-	console.log('wht');
 	let space = getRandomInt(0, 8);
 	if (spaceIsEmpty(space) == false && !allSpacesTaken()) {
 		initCpu();
 		return;
 	}
 	if (spaceIsEmpty(space)) {
-		spaceEles[space].innerHTML = playerTwoSym;
-		spaces[space] = gameConfig.pTwoTeam;
+		setTimeout(function () {
+			spaceEles[space].innerHTML = playerTwoSym;
+			spaces[space] = gameConfig.pTwoTeam;
+
+			turnContainer.innerHTML = `
+			<p>
+				${playerOneSym}
+				TURN
+			</p>
+					`;
+			checkWin();
+			curTurn = gameConfig.pOneTeam;
+		}, 500);
 	}
-	checkWin();
 }
 
 for (let i = 0; i < spaceEles.length; i++) {
@@ -49,11 +62,24 @@ for (let i = 0; i < spaceEles.length; i++) {
 //update current turn
 function spaceSelected(space) {
 	if (curTurn == gameConfig.pOneTeam && spaceIsEmpty(space)) {
-		console.log(spaceIsEmpty(space));
+		curTurn = gameConfig.pTwoTeam;
+		console.log(curTurn);
 		spaceEles[space].innerHTML = playerOneSym;
 		spaces[space] = gameConfig.pOneTeam;
+
+		turnContainer.innerHTML = `
+			<p>
+				${playerTwoSym}
+				TURN
+			</p>
+					`;
+
 		if (gameConfig.pTwo == 'cpu') initCpu();
-	} else if (spaceIsEmpty(space) == true) {
+	} else if (
+		spaceIsEmpty(space) == true &&
+		curTurn == gameConfig.pTwoTeam &&
+		gameConfig.pTwo != 'cpu'
+	) {
 		spaceEles[space].innerHTML = playerTwoSym;
 		spaces[space] = gameConfig.pOneTeam;
 	}
@@ -73,9 +99,10 @@ function checkWin() {
 				spaces[i + 1] === spaces[i + 2]
 			) {
 				if (spaces[i] == gameConfig.pOneTeam)
-					console.log('player onewins hori');
-				else if (spaces[i] == gameConfig.pTwoTeam)
-					console.log('player two wins hori');
+					initWinScreen(playerOneSym, gameConfig.pOneTeam);
+				else if (spaces[i] == gameConfig.pTwoTeam) {
+					initWinScreen(playerTwoSym, gameConfig.pTwoTeam);
+				}
 			}
 		} else if (vertStartSpaces.includes(i)) {
 			if (
@@ -83,9 +110,9 @@ function checkWin() {
 				spaces[i + 3] === spaces[i + 6]
 			) {
 				if (spaces[i] == gameConfig.pOneTeam)
-					console.log('Player One wins vert');
+					initWinScreen(playerOneSym, gameConfig.pOneTeam);
 				else if (spaces[i] == gameConfig.pTwoTeam)
-					console.log('Player Two wins vert');
+					initWinScreen(playerTwoSym, gameConfig.pTwoTeam);
 			}
 			//when its at 1
 		}
@@ -95,9 +122,9 @@ function checkWin() {
 				spaces[i + 4] === spaces[i + 8]
 			) {
 				if (spaces[i] == gameConfig.pOneTeam)
-					console.log('player One Wins Diag');
+					initWinScreen(playerOneSym, gameConfig.pOneTeam);
 				else if (spaces[i] == gameConfig.pTwoTeam)
-					console.log('player Two wins diag');
+					initWinScreen(playerTwoSym, gameConfig.pTwoTeam);
 			}
 		}
 		if (i === 2) {
@@ -106,14 +133,31 @@ function checkWin() {
 				spaces[i + 2] === spaces[i + 4]
 			) {
 				if (spaces[i] == gameConfig.pOneTeam)
-					console.log('player One Wins Diag');
+					initWinScreen(playerOneSym, gameConfig.pOneTeam);
 				else if (spaces[i] == gameConfig.pTwoTeam)
-					console.log('player Two wins diag');
+					initWinScreen(playerTwoSym, gameConfig.pTwoTeam);
 			}
 		}
 	}
 }
 
+const winEle = {
+	container: document.querySelector('.win-container'),
+	title: document.querySelector('.win-container h2'),
+	nextRound: document.querySelector('.next-round-button'),
+};
+const winContainer = document.querySelector('.win-container');
+function initWinScreen(winnerSym, team) {
+	const lTeam = team == 'x' ? 'o' : 'x';
+	winContainer.style.display = 'flex';
+	winEle.title.innerHTML = ` 
+		<h2 class="${team}-color">
+			${winnerSym}
+			TAKES THE ROUND
+		</h2>
+	`;
+	winEle.nextRound.classList.add(`${lTeam}-background`);
+}
 //takes in a space index, if the array value is a number then the bool is true
 function spaceIsEmpty(space) {
 	if (spaces[space] == 'x' || spaces[space] == 'o') return false;
