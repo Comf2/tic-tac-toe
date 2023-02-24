@@ -32,6 +32,17 @@ function checkSlider() {
 const newCpuGame = document.querySelector('.new-game-cpu');
 newCpuGame.onclick = () => initCpuGame();
 function initCpuGame() {
-	let team;
-	sliderOnX ? (team = 'x') : (team = 'o');
+	let pOneTeam;
+	let pTwoTeam;
+	sliderOnX ? (pOneTeam = 'x') : (pOneTeam = 'o');
+	sliderOnX ? (pTwoTeam = 'o') : (pTwoTeam = 'x');
+
+	let Op = 'cpu';
+	let game = {
+		pOneTeam: pOneTeam,
+		pTwoTeam: pTwoTeam,
+		pTwo: Op,
+	};
+	window.localStorage.setItem('gameConfig', JSON.stringify(game));
+	window.location = '../index.html';
 }
