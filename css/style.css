@@ -33,7 +33,7 @@ body {
 .x-color {
 	color: var(--x-color-500) !important;
 }
-.main-text {
+.tie-color {
 	color: var(--text-400);
 }
 .secondary-text {

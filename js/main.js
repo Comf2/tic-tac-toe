@@ -8,11 +8,16 @@ let curTurn = 'x';
 //TODO: make the start page index.html for hosting purposes later
 let playerOneSym = `<i class="fa-solid fa-x x-color"></i>`;
 let playerTwoSym = `	<i class="fa-solid fa-o o-color"></i>`;
+let tieSym = `	<i class="fa-solid fa-minus tie-color"></i>`;
+
 const spaceEles = document.querySelectorAll('.game-space');
 
 let gamePlaying = true;
 
 gameConfig = JSON.parse(localStorage.getItem('gameConfig'));
+
+//pOne wins ties, pTwo Wins
+let scores = [0, 0, 0];
 
 //front end eles changing
 const turnContainer = document.querySelector('.turn-container');
@@ -32,10 +37,13 @@ function initConfig() {
 }
 initConfig();
 
+//TODO: Make all spaces taken function check if all spaces are taken, and if so run a win
+//then refactor code to check if all spaces taken, after checking win everytime
 //init the cpu, to run on its turn
 function initCpu() {
+	if (!gamePlaying) return;
 	let space = getRandomInt(0, 8);
-	if (spaceIsEmpty(space) == false && !allSpacesTaken()) {
+	if (spaceIsEmpty(space) == false) {
 		initCpu();
 		return;
 	}
@@ -61,9 +69,9 @@ for (let i = 0; i < spaceEles.length; i++) {
 }
 //update current turn
 function spaceSelected(space) {
+	if (!gamePlaying) return;
 	if (curTurn == gameConfig.pOneTeam && spaceIsEmpty(space)) {
 		curTurn = gameConfig.pTwoTeam;
-		console.log(curTurn);
 		spaceEles[space].innerHTML = playerOneSym;
 		spaces[space] = gameConfig.pOneTeam;
 
@@ -73,6 +81,7 @@ function spaceSelected(space) {
 				TURN
 			</p>
 					`;
+		checkWin();
 
 		if (gameConfig.pTwo == 'cpu') initCpu();
 	} else if (
@@ -81,9 +90,9 @@ function spaceSelected(space) {
 		gameConfig.pTwo != 'cpu'
 	) {
 		spaceEles[space].innerHTML = playerTwoSym;
-		spaces[space] = gameConfig.pOneTeam;
+		spaces[space] = gameConfig.pTwoTeam;
+		checkWin();
 	}
-	checkWin();
 }
 
 function checkWin() {
@@ -139,8 +148,8 @@ function checkWin() {
 			}
 		}
 	}
+	if (gamePlaying === true) allSpacesTaken();
 }
-
 const winEle = {
 	container: document.querySelector('.win-container'),
 	title: document.querySelector('.win-container h2'),
@@ -148,6 +157,7 @@ const winEle = {
 };
 const winContainer = document.querySelector('.win-container');
 function initWinScreen(winnerSym, team) {
+	gamePlaying = false;
 	const lTeam = team == 'x' ? 'o' : 'x';
 	winContainer.style.display = 'flex';
 	winEle.title.innerHTML = ` 
@@ -156,7 +166,16 @@ function initWinScreen(winnerSym, team) {
 			TAKES THE ROUND
 		</h2>
 	`;
+	console.log(team, gameConfig.pOneTeam);
+	team == gameConfig.pOneTeam ? scores[0]++ : scores[1]++;
 	winEle.nextRound.classList.add(`${lTeam}-background`);
+	updateScore(scores);
+}
+const currentScoreEle = document.querySelectorAll('.current-score');
+function updateScore(scores) {
+	for (let i = 0; i < currentScoreEle.length; i++) {
+		currentScoreEle[i].innerHTML = `${scores[i]}`;
+	}
 }
 //takes in a space index, if the array value is a number then the bool is true
 function spaceIsEmpty(space) {
@@ -167,8 +186,9 @@ function allSpacesTaken() {
 	let takenSpaces = spaces.filter(function (space) {
 		return space == 'x' || space == 'o';
 	});
-	if (takenSpaces.length === spaces.length) return true;
-	else return false;
+	if (takenSpaces.length === spaces.length) {
+		initWinScreen(tieSym, 'tie');
+	}
 }
 function getRandomInt(min, max) {
 	// min and max included
