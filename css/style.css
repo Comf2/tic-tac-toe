@@ -124,6 +124,7 @@ body {
 	background-color: var(--text-400);
 	color: var(--dark-600);
 	border-radius: 1em;
+	text-transform: uppercase;
 }
 .score-container p {
 	display: flex;
@@ -131,10 +132,10 @@ body {
 	justify-content: center;
 	gap: 1vmin;
 }
-.score-container:first-child {
+.score-container[data-team='x'] {
 	background-color: var(--x-color-500);
 }
-.score-container:last-child {
+.score-container[data-team='o'] {
 	background-color: var(--o-color-500);
 }
 .score-container p:last-child {

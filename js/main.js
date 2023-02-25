@@ -1,5 +1,5 @@
 //prettier-ignore
-const spaces = [
+let spaces = [
     1, 2, 3, 
     4, 5, 6, 
     7, 8, 9
@@ -23,10 +23,13 @@ let scores = [0, 0, 0];
 const turnContainer = document.querySelector('.turn-container');
 
 function initConfig() {
+	gamePlaying = true;
+	curTurn = 'x';
 	if (gameConfig.pOneTeam == 'o') {
 		playerOneSym = `<i class="fa-solid fa-o o-color"></i>`;
 		playerTwoSym = `	<i class="fa-solid fa-x x-color"></i>`;
 		if ((gameConfig.pTwo = 'cpu')) {
+			console.log('here');
 			initCpu();
 			curTurn = 'o';
 		}
@@ -42,6 +45,8 @@ initConfig();
 //init the cpu, to run on its turn
 function initCpu() {
 	if (!gamePlaying) return;
+
+	console.log('placing item');
 	let space = getRandomInt(0, 8);
 	if (spaceIsEmpty(space) == false) {
 		initCpu();
@@ -66,6 +71,11 @@ function initCpu() {
 
 for (let i = 0; i < spaceEles.length; i++) {
 	spaceEles[i].onclick = () => spaceSelected(i);
+}
+
+function initScoreBoard() {
+	if (gameConfig.pOneTeam === 'x') {
+	}
 }
 //update current turn
 function spaceSelected(space) {
@@ -166,12 +176,33 @@ function initWinScreen(winnerSym, team) {
 			TAKES THE ROUND
 		</h2>
 	`;
-	console.log(team, gameConfig.pOneTeam);
-	team == gameConfig.pOneTeam ? scores[0]++ : scores[1]++;
 	winEle.nextRound.classList.add(`${lTeam}-background`);
+	if (team === 'cpu') {
+		scores[1]++;
+		updateScore(scores);
+		return;
+	}
+	team == gameConfig.pOneTeam ? scores[0]++ : scores[2]++;
 	updateScore(scores);
 }
 const currentScoreEle = document.querySelectorAll('.current-score');
+function initScore() {
+	const scoreContainer = document.querySelectorAll('.score-container');
+	const teamEle = document.querySelectorAll('.score-container > p');
+	console.log(gameConfig);
+	scoreContainer[0].setAttribute('data-team', gameConfig.pOneTeam);
+	scoreContainer[2].setAttribute('data-team', gameConfig.pTwoTeam);
+
+	teamEle[0].innerHTML = `
+		<i class="fa-solid fa-${gameConfig.pOneTeam}"></i>
+		(YOU)
+	`;
+	teamEle[4].innerHTML = `
+		<i class="fa-solid fa-${gameConfig.pTwoTeam}"></i>
+		(${gameConfig.pTwo})
+	`;
+}
+initScore();
 function updateScore(scores) {
 	for (let i = 0; i < currentScoreEle.length; i++) {
 		currentScoreEle[i].innerHTML = `${scores[i]}`;
@@ -193,4 +224,21 @@ function allSpacesTaken() {
 function getRandomInt(min, max) {
 	// min and max included
 	return Math.floor(Math.random() * (max - min + 1) + min);
+}
+//starting a new round
+
+function clearGame() {
+	spaces = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+	for (let i = 0; i < spaceEles.length; i++) {
+		spaceEles[i].innerHTML = '';
+	}
+}
+const nextRoundButton = document.querySelector('.next-round-button');
+nextRoundButton.onclick = () => startNextRound();
+
+function startNextRound() {
+	clearGame();
+	winContainer.style.display = 'none';
+	initConfig();
+	gamePlaying = true;
 }
